@@ -18,20 +18,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EventEntity {
+public class BetSlipEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String league;
-    private String homeTeam;
-    private String awayTeam;
-
-    private BigDecimal homeWinRate;
-    private BigDecimal drawRate;
-    private BigDecimal awayWinRate;
-
-    private LocalDateTime startTime;
+    private long eventId;
+    private String customerId;
+    private String selectedBetType;
+    private BigDecimal stake;
+    private int multiplier;
     private LocalDateTime createdAt;
 
     @PrePersist

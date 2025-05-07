@@ -17,18 +17,4 @@ public class EventMapper {
                 entity.getCreatedAt()
         );
     }
-
-    public static EventEntity toEntity(Event domain) {
-        return EventEntity.builder()
-                .id(domain.getId())
-                .league(domain.getLeague())
-                .homeTeam(domain.getHomeTeam())
-                .awayTeam(domain.getAwayTeam())
-                .homeWinRate(domain.getHomeWinRate())
-                .drawRate(domain.getDrawRate())
-                .awayWinRate(domain.getAwayWinRate())
-                .startTime(domain.getStartTime())
-                .createdAt(domain.getCreatedAt())
-                .build();
-    }
 }
