@@ -2,10 +2,7 @@ package com.casestudy.BetCaseStudy.application.service;
 
 import com.casestudy.BetCaseStudy.application.dto.CreateBetSlipRequest;
 import com.casestudy.BetCaseStudy.application.usecase.CreateBetSlipUseCase;
-import com.casestudy.BetCaseStudy.domain.exception.BetRateMismatchException;
-import com.casestudy.BetCaseStudy.domain.exception.BetSlipLimitExceededException;
-import com.casestudy.BetCaseStudy.domain.exception.BetSlipTimeoutException;
-import com.casestudy.BetCaseStudy.domain.exception.EventNotFoundException;
+import com.casestudy.BetCaseStudy.domain.exception.*;
 import com.casestudy.BetCaseStudy.domain.model.BetType;
 import com.casestudy.BetCaseStudy.infrastructure.persistence.entity.BetSlipEntity;
 import com.casestudy.BetCaseStudy.infrastructure.persistence.entity.EventEntity;
@@ -17,7 +14,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.PessimisticLockException;
 
 import java.math.BigDecimal;
 
@@ -32,40 +28,42 @@ import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConsta
 public class BetSlipService implements CreateBetSlipUseCase {
 
     private static final int ZERO = 0;
-    private final EventJpaRepository eventJpaRepository;
-    private final BetSlipJpaRepository betSlipJpaRepository;
-
     @Value("${betcasestudy.betslip.max-multiplier}")
     private int maxMultiplier;
-
     @Value("${betcasestudy.betslip.timeout-ms}")
     private int betTimeoutMs;
-
     @Value("${betcasestudy.betslip.max-total-investment}")
     private BigDecimal maxTotalInvestment;
 
+    private final EventJpaRepository eventJpaRepository;
+    private final BetSlipJpaRepository betSlipJpaRepository;
+    private final DistributedBetSlipLocker distributedBetSlipLocker;
+
     @Override
     @Retryable(
-            value = {PessimisticLockException.class},
+            value = {BetCaseStudyLockException.class, RuntimeException.class},
             backoff = @Backoff(delay = 200)
     )
     @Transactional(rollbackFor = {
             BetSlipTimeoutException.class
     })
-    public void createBetSlip(CreateBetSlipRequest request) {
-        final long start = System.currentTimeMillis();
+    public void createBetSlip(final CreateBetSlipRequest request) {
+        distributedBetSlipLocker.executeWithLock(request.eventId(), request.selectedBetType(), () -> {
 
-        validateLimits(request);
+            final long start = System.currentTimeMillis();
 
-        final EventEntity event = getEvent(request.eventId());
+            validateLimits(request);
 
-        validateRate(request, event);
+            final EventEntity event = getEvent(request.eventId());
 
-        final BetSlipEntity slip = buildBetSlip(request);
+            validateRate(request, event);
 
-        betSlipJpaRepository.saveAndFlush(slip);
+            final BetSlipEntity slip = buildBetSlip(request);
 
-        validateTimeout(start);
+            betSlipJpaRepository.saveAndFlush(slip);
+
+            validateTimeout(start);
+        });
     }
 
     private void validateLimits(final CreateBetSlipRequest request) {
@@ -80,7 +78,7 @@ public class BetSlipService implements CreateBetSlipUseCase {
     }
 
     private EventEntity getEvent(final long eventId) {
-        return eventJpaRepository.findByIdWithLock(eventId)
+        return eventJpaRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(String.format(EVENT_NOT_FOUND_MESSAGE, eventId)));
     }
 

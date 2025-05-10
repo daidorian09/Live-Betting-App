@@ -10,7 +10,7 @@ public class CustomerIdValidator {
         try {
             fromString(customerId);
             return true;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             return false;
         }
     }

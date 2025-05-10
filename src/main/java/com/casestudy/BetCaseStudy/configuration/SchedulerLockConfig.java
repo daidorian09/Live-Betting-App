@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 @Configuration
 @EnableSchedulerLock(defaultLockAtMostFor = "PT20S")
@@ -42,5 +43,9 @@ public class SchedulerLockConfig {
     public RedisLockProvider redisLockProvider(final RedisConnectionFactory redisConnectionFactory) {
         return new RedisLockProvider(redisConnectionFactory, shedlockKeyPrefix);
     }
-}
 
+    @Bean
+    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        return new StringRedisTemplate(redisConnectionFactory);
+    }
+}
