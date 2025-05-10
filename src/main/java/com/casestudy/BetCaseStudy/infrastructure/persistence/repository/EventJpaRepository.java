@@ -21,7 +21,7 @@ public interface EventJpaRepository extends JpaRepository<EventEntity, Long> {
 
     List<EventEntity> findByStartTimeAfter(final LocalDateTime dateTime);
 
-    Page<EventEntity> findByStartTimeAfter(LocalDateTime dateTime, Pageable pageable);
+    Page<EventEntity> findAllByStartTimeAfter(LocalDateTime dateTime, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("SELECT e FROM EventEntity e WHERE e.id = :id")

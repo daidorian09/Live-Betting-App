@@ -14,7 +14,8 @@ public class EventMapper {
                 entity.getDrawRate(),
                 entity.getAwayWinRate(),
                 entity.getStartTime(),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 }

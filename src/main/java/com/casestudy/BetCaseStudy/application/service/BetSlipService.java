@@ -35,13 +35,13 @@ public class BetSlipService implements CreateBetSlipUseCase {
     private final EventJpaRepository eventJpaRepository;
     private final BetSlipJpaRepository betSlipJpaRepository;
 
-    @Value("${betcasestudy.betslip.max-multiplier:500}")
+    @Value("${betcasestudy.betslip.max-multiplier}")
     private int maxMultiplier;
 
-    @Value("${betcasestudy.betslip.timeout-ms:2000}")
+    @Value("${betcasestudy.betslip.timeout-ms}")
     private int betTimeoutMs;
 
-    @Value("${betcasestudy.betslip.max-total-investment:10000}")
+    @Value("${betcasestudy.betslip.max-total-investment}")
     private BigDecimal maxTotalInvestment;
 
     @Override
@@ -89,7 +89,7 @@ public class BetSlipService implements CreateBetSlipUseCase {
                 .fromString(request.selectedBetType())
                 .getRateFrom(event);
 
-        if (currentRate.compareTo(request.expectedRate()) != 0) {
+        if (currentRate.compareTo(request.expectedRate()) != ZERO) {
             throw new BetRateMismatchException(String.format(BET_RATE_CHANGED_MESSAGE, currentRate));
         }
     }

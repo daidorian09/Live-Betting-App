@@ -21,21 +21,28 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class EventUpdateService implements UpdateEventOddsUseCase {
 
+    public static final double MIN_FACTOR = 0.95;
+    public static final double MAX_FACTOR = 1.05;
+    public static final int SCALE = 2;
     private final EventJpaRepository eventJpaRepository;
     private final Random random = new Random();
 
-    @Value("${betcasestudy.broadcast.page-size:100}")
+    @Value("${betcasestudy.broadcast.page-size}")
     private int pageSize;
 
     @Override
-    @Scheduled(fixedRate = 1000)
- //   @SchedulerLock(name = "updateEventOdds", lockAtMostFor = "PT5S", lockAtLeastFor = "PT1S")
+    @Scheduled(fixedRate = 10000) // every 10 seconds
+    @SchedulerLock(
+            name = "updateEventOdds",
+            lockAtMostFor = "PT20S",  // fail-safe: max job duration
+            lockAtLeastFor = "PT5S"   // prevents overlapping executions
+    )
     public void updateOdds() {
         int page = 0;
         Page<EventEntity> pageResult;
 
         do {
-            pageResult = eventJpaRepository.findByStartTimeAfter(LocalDateTime.now(), PageRequest.of(page, pageSize));
+            pageResult = eventJpaRepository.findAllByStartTimeAfter(LocalDateTime.now(), PageRequest.of(page, pageSize));
             final List<EventEntity> events = pageResult.getContent();
 
             events.forEach(event -> {
@@ -50,7 +57,7 @@ public class EventUpdateService implements UpdateEventOddsUseCase {
     }
 
     private BigDecimal randomize(BigDecimal value) {
-        double factor = 0.95 + (1.05 - 0.95) * random.nextDouble();
-        return value.multiply(BigDecimal.valueOf(factor)).setScale(2, RoundingMode.HALF_UP);
+        double factor = MIN_FACTOR + (MAX_FACTOR - MIN_FACTOR) * random.nextDouble();
+        return value.multiply(BigDecimal.valueOf(factor)).setScale(SCALE, RoundingMode.HALF_UP);
     }
 }
