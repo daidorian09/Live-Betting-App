@@ -41,7 +41,7 @@ public class BetSlipService implements CreateBetSlipUseCase {
 
     @Override
     @Retryable(
-            value = {BetCaseStudyLockException.class, RuntimeException.class},
+            value = {LockOperationFailedException.class, RuntimeException.class},
             backoff = @Backoff(delay = 200)
     )
     @Transactional(rollbackFor = {

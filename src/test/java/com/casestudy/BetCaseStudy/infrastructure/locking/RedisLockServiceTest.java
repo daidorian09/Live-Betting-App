@@ -1,6 +1,6 @@
 package com.casestudy.BetCaseStudy.infrastructure.locking;
 
-import com.casestudy.BetCaseStudy.domain.exception.BetCaseStudyLockException;
+import com.casestudy.BetCaseStudy.domain.exception.LockOperationFailedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,7 +67,7 @@ class RedisLockServiceTest {
         // when / then
         assertThatThrownBy(() ->
                 redisLockService.executeWithLock(key, timeout, () -> {})
-        ).isInstanceOf(BetCaseStudyLockException.class)
+        ).isInstanceOf(LockOperationFailedException.class)
                 .hasMessageContaining("Could not acquire Redis lock for key");
 
         verify(redisTemplate, never()).execute(any(), anyList(), any());

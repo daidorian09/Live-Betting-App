@@ -1,7 +1,7 @@
 package com.casestudy.BetCaseStudy.application.service;
 
 import com.casestudy.BetCaseStudy.application.usecase.EventLockManager;
-import com.casestudy.BetCaseStudy.domain.exception.BetCaseStudyLockException;
+import com.casestudy.BetCaseStudy.domain.exception.LockOperationFailedException;
 import com.casestudy.BetCaseStudy.infrastructure.locking.RedisLockService;
 import com.casestudy.BetCaseStudy.infrastructure.persistence.entity.EventEntity;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class DistributedEventLockService implements EventLockManager {
             final AtomicReference<EventEntity> updated = new AtomicReference<>();
             redisLockService.executeWithLock(lockKey, LOCK_TIMEOUT, () -> updated.set(updateAction.get()));
             return Optional.ofNullable(updated.get());
-        } catch (BetCaseStudyLockException e) {
+        } catch (LockOperationFailedException e) {
             log.warn("Lock could not be acquired : key={}", lockKey, e);
             return Optional.empty();
         } catch (Exception ex) {

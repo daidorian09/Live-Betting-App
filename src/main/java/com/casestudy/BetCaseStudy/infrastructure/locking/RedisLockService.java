@@ -1,6 +1,6 @@
 package com.casestudy.BetCaseStudy.infrastructure.locking;
 
-import com.casestudy.BetCaseStudy.domain.exception.BetCaseStudyLockException;
+import com.casestudy.BetCaseStudy.domain.exception.LockOperationFailedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
@@ -21,7 +21,7 @@ public class RedisLockService {
         Boolean acquired = redisTemplate.opsForValue().setIfAbsent(key, lockValue, timeout);
 
         if (Boolean.FALSE.equals(acquired)) {
-            throw new BetCaseStudyLockException("Could not acquire Redis lock for key: " + key);
+            throw new LockOperationFailedException("Could not acquire Redis lock for key: " + key);
         }
 
         try {

@@ -1,7 +1,7 @@
 package com.casestudy.BetCaseStudy.application.service;
 
 import com.casestudy.BetCaseStudy.application.usecase.BetSlipLockManager;
-import com.casestudy.BetCaseStudy.domain.exception.BetCaseStudyLockException;
+import com.casestudy.BetCaseStudy.domain.exception.LockOperationFailedException;
 import com.casestudy.BetCaseStudy.domain.exception.BetRateMismatchException;
 import com.casestudy.BetCaseStudy.domain.exception.BetSlipTimeoutException;
 import com.casestudy.BetCaseStudy.domain.exception.EventNotFoundException;
@@ -26,7 +26,7 @@ public class DistributedBetSlipLocker implements BetSlipLockManager {
 
         try {
             redisLockService.executeWithLock(lockKey, LOCK_TIMEOUT, action);
-        } catch (BetCaseStudyLockException | BetRateMismatchException | BetSlipTimeoutException |
+        } catch (LockOperationFailedException | BetRateMismatchException | BetSlipTimeoutException |
                  EventNotFoundException e) {
             log.warn("Lock could not be acquired : key={}, eventId={}, betType={}", lockKey, eventId, betType, e);
             throw e;
