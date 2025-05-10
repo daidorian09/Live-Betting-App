@@ -3,13 +3,27 @@ version: "3.8"
 services:
   redis:
     image: redis:7-alpine
-    container_name: betcase-redis-container
+    container_name: redis
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
+
+  app:
+    image: live-betting-app
+    container_name: live-betting
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    environment:
+      SPRING_REDIS_HOST: redis
+      SPRING_PROFILES_ACTIVE: default
 
 volumes:
   redis-data:
