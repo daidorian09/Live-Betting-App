@@ -20,7 +20,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConstant.TOTAL_INVESTMENT_LIMIT_EXCEEDED_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
