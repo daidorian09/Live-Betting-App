@@ -117,6 +117,9 @@ fabric.properties
 ### Java ###
 # Compiled class file
 *.class
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
 # Log file
 *.log
@@ -126,6 +129,9 @@ fabric.properties
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
+
+### VS Code ###
+.vscode/
 
 # Package Files #
 *.jar
