@@ -52,7 +52,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         final String path = request.getRequestURI();
-        return path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/actuator");
+        return path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
     }
 
     private boolean isValidBasicAuth(final String authorizationHeader) {

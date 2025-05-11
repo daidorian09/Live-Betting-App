@@ -35,7 +35,7 @@ class HeaderAuthenticationFilterTest {
     @Test
     void shouldSetAuthenticationWhenValidBasicAuthAndValidCustomerId() throws Exception {
         // Given
-        final String credentials = SecurityConstant.BASIC_AUTH_USERNAME + ":" + SecurityConstant.BASIC_AUTH_PASSWORD;
+        final String credentials = "%s:%s".formatted(SecurityConstant.BASIC_AUTH_USERNAME, SecurityConstant.BASIC_AUTH_PASSWORD);
         final String base64Creds = Base64.getEncoder().encodeToString(credentials.getBytes());
 
         request.addHeader(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.AUTHENTICATION_SCHEME + base64Creds);
@@ -74,8 +74,19 @@ class HeaderAuthenticationFilterTest {
     }
 
     @Test
+    void shouldNotAuthenticateWhenBasic64PartMissing() throws Exception {
+        request.addHeader(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.AUTHENTICATION_SCHEME);
+        request.addHeader(SecurityConstant.CUSTOMER_ID_HEADER, "123e4567-e89b-12d3-a456-426614174000");
+
+        filter.doFilterInternal(request, response, mockFilterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(mockFilterChain).doFilter(request, response);
+    }
+
+    @Test
     void shouldNotAuthenticateWhenCustomerIdInvalid() throws Exception {
-        final String credentials = SecurityConstant.BASIC_AUTH_USERNAME + ":" + SecurityConstant.BASIC_AUTH_PASSWORD;
+        final String credentials = "%s:%s".formatted(SecurityConstant.BASIC_AUTH_USERNAME, SecurityConstant.BASIC_AUTH_PASSWORD);
         final String base64Creds = Base64.getEncoder().encodeToString(credentials.getBytes());
 
         request.addHeader(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.AUTHENTICATION_SCHEME + base64Creds);
@@ -85,5 +96,67 @@ class HeaderAuthenticationFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(mockFilterChain).doFilter(request, response);
+    }
+
+    @Test
+    void shouldNotAuthenticateWhenUsernameInvalid() throws Exception {
+        final String invalidUsername = "invalid-username";
+        final String password = SecurityConstant.BASIC_AUTH_PASSWORD;
+        final String credentials = "%s:%s".formatted(invalidUsername, password);
+
+        final String base64Creds = Base64.getEncoder().encodeToString(credentials.getBytes());
+
+        request.addHeader(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.AUTHENTICATION_SCHEME + base64Creds);
+        request.addHeader(SecurityConstant.CUSTOMER_ID_HEADER, "123e4567-e89b-12d3-a456-426614174000");
+
+        filter.doFilterInternal(request, response, mockFilterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(mockFilterChain).doFilter(request, response);
+    }
+
+    @Test
+    void shouldNotAuthenticateWhenPasswordInvalid() throws Exception {
+        final String username = SecurityConstant.BASIC_AUTH_USERNAME;
+        final String InvalidPassword = "invalid-password";
+        final String credentials = "%s:%s".formatted(username, InvalidPassword);
+
+        final String base64Creds = Base64.getEncoder().encodeToString(credentials.getBytes());
+
+        request.addHeader(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.AUTHENTICATION_SCHEME + base64Creds);
+        request.addHeader(SecurityConstant.CUSTOMER_ID_HEADER, "123e4567-e89b-12d3-a456-426614174000");
+
+        filter.doFilterInternal(request, response, mockFilterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(mockFilterChain).doFilter(request, response);
+    }
+
+    @Test
+    void shouldNotAuthenticateWhenAuthenticationSchemeDifferent() throws Exception {
+        final String InvalidAuthenticationScheme = "Bearer token";
+        request.addHeader(SecurityConstant.AUTHORIZATION_HEADER, InvalidAuthenticationScheme);
+        request.addHeader(SecurityConstant.CUSTOMER_ID_HEADER, "123e4567-e89b-12d3-a456-426614174000");
+
+        filter.doFilterInternal(request, response, mockFilterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(mockFilterChain).doFilter(request, response);
+    }
+
+    @Test
+    void shouldNotFilterSwaggerUI() {
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/swagger-ui/index.html");
+
+        assertThat(filter.shouldNotFilter(request)).isTrue();
+    }
+
+    @Test
+    void shouldNotFilterApiDocs() {
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/v3/api-docs");
+
+        assertThat(filter.shouldNotFilter(request)).isTrue();
     }
 }
