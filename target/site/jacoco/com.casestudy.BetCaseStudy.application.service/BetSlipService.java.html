@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BetSlipService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">BetCaseStudy</a> &gt; <a href="index.source.html" class="el_package">com.casestudy.BetCaseStudy.application.service</a> &gt; <span class="el_source">BetSlipService.java</span></div><h1>BetSlipService.java</h1><pre class="source lang-java linenums">package com.casestudy.BetCaseStudy.application.service;
+
+import com.casestudy.BetCaseStudy.application.dto.CreateBetSlipRequest;
+import com.casestudy.BetCaseStudy.application.usecase.CreateBetSlipUseCase;
+import com.casestudy.BetCaseStudy.domain.exception.BetRateMismatchException;
+import com.casestudy.BetCaseStudy.domain.exception.BetSlipLimitExceededException;
+import com.casestudy.BetCaseStudy.domain.exception.BetSlipTimeoutException;
+import com.casestudy.BetCaseStudy.domain.exception.EventNotFoundException;
+import com.casestudy.BetCaseStudy.domain.exception.LockOperationFailedException;
+import com.casestudy.BetCaseStudy.domain.model.BetType;
+import com.casestudy.BetCaseStudy.infrastructure.persistence.entity.BetSlipEntity;
+import com.casestudy.BetCaseStudy.infrastructure.persistence.entity.EventEntity;
+import com.casestudy.BetCaseStudy.infrastructure.persistence.repository.BetSlipJpaRepository;
+import com.casestudy.BetCaseStudy.infrastructure.persistence.repository.EventJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+
+import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConstant.BETSLIP_TIMEOUT_MESSAGE;
+import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConstant.BET_RATE_CHANGED_MESSAGE;
+import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConstant.EVENT_NOT_FOUND_MESSAGE;
+import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConstant.MULTIPLIER_LIMIT_EXCEEDED_MESSAGE;
+import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConstant.TOTAL_INVESTMENT_LIMIT_EXCEEDED_MESSAGE;
+
+@Service
+@RequiredArgsConstructor
+public class BetSlipService implements CreateBetSlipUseCase {
+
+    private static final int ZERO = 0;
+    @Value(&quot;${betcasestudy.betslip.max-multiplier}&quot;)
+    private int maxMultiplier;
+    @Value(&quot;${betcasestudy.betslip.timeout-ms}&quot;)
+    private int betTimeoutMs;
+    @Value(&quot;${betcasestudy.betslip.max-total-investment}&quot;)
+    private BigDecimal maxTotalInvestment;
+
+    private final EventJpaRepository eventJpaRepository;
+    private final BetSlipJpaRepository betSlipJpaRepository;
+    private final DistributedBetSlipLocker distributedBetSlipLocker;
+
+    @Override
+    @Retryable(
+            value = {LockOperationFailedException.class, RuntimeException.class},
+            backoff = @Backoff(delay = 200)
+    )
+    @Transactional(rollbackFor = {
+            BetSlipTimeoutException.class
+    })
+    public void createBetSlip(final CreateBetSlipRequest request) {
+<span class="fc" id="L55">        distributedBetSlipLocker.executeWithLock(request.eventId(), request.selectedBetType(), () -&gt; {</span>
+
+<span class="fc" id="L57">            final long start = System.currentTimeMillis();</span>
+
+<span class="fc" id="L59">            validateLimits(request);</span>
+
+<span class="fc" id="L61">            final EventEntity event = getEvent(request.eventId());</span>
+
+<span class="fc" id="L63">            validateRate(request, event);</span>
+
+<span class="fc" id="L65">            final BetSlipEntity slip = buildBetSlip(request);</span>
+
+<span class="fc" id="L67">            betSlipJpaRepository.saveAndFlush(slip);</span>
+
+<span class="fc" id="L69">            validateTimeout(start);</span>
+<span class="fc" id="L70">        });</span>
+<span class="fc" id="L71">    }</span>
+
+    private void validateLimits(final CreateBetSlipRequest request) {
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (request.multiplier() &gt; maxMultiplier) {</span>
+<span class="fc" id="L75">            throw new BetSlipLimitExceededException(String.format(MULTIPLIER_LIMIT_EXCEEDED_MESSAGE, maxMultiplier));</span>
+        }
+
+<span class="fc" id="L78">        final BigDecimal totalInvestment = request.stake().multiply(BigDecimal.valueOf(request.multiplier()));</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (totalInvestment.compareTo(maxTotalInvestment) &gt; ZERO) {</span>
+<span class="fc" id="L80">            throw new BetSlipLimitExceededException(String.format(TOTAL_INVESTMENT_LIMIT_EXCEEDED_MESSAGE, maxTotalInvestment));</span>
+        }
+<span class="fc" id="L82">    }</span>
+
+    private EventEntity getEvent(final long eventId) {
+<span class="fc" id="L85">        return eventJpaRepository.findById(eventId)</span>
+<span class="fc" id="L86">                .orElseThrow(() -&gt; new EventNotFoundException(String.format(EVENT_NOT_FOUND_MESSAGE, eventId)));</span>
+    }
+
+    private void validateRate(final CreateBetSlipRequest request, final EventEntity event) {
+<span class="fc" id="L90">        final BigDecimal currentRate = BetType</span>
+<span class="fc" id="L91">                .fromString(request.selectedBetType())</span>
+<span class="fc" id="L92">                .getRateFrom(event);</span>
+
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (currentRate.compareTo(request.expectedRate()) != ZERO) {</span>
+<span class="fc" id="L95">            throw new BetRateMismatchException(String.format(BET_RATE_CHANGED_MESSAGE, currentRate));</span>
+        }
+<span class="fc" id="L97">    }</span>
+
+    private BetSlipEntity buildBetSlip(final CreateBetSlipRequest request) {
+<span class="fc" id="L100">        return BetSlipEntity.builder()</span>
+<span class="fc" id="L101">                .eventId(request.eventId())</span>
+<span class="fc" id="L102">                .customerId(request.customerId())</span>
+<span class="fc" id="L103">                .selectedBetType(request.selectedBetType())</span>
+<span class="fc" id="L104">                .stake(request.stake())</span>
+<span class="fc" id="L105">                .multiplier(request.multiplier())</span>
+<span class="fc" id="L106">                .build();</span>
+    }
+
+    private void validateTimeout(final long start) {
+<span class="fc" id="L110">        final long elapsed = System.currentTimeMillis() - start;</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (elapsed &gt; betTimeoutMs) {</span>
+<span class="fc" id="L112">            throw new BetSlipTimeoutException(String.format(BETSLIP_TIMEOUT_MESSAGE, betTimeoutMs));</span>
+        }
+<span class="fc" id="L114">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

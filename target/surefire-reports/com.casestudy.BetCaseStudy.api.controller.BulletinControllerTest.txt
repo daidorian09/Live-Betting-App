@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.casestudy.BetCaseStudy.api.controller.BulletinControllerTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.105 s -- in com.casestudy.BetCaseStudy.api.controller.BulletinControllerTest

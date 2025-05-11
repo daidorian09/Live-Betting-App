@@ -9,7 +9,7 @@ This repository implements a clean architecture-based live betting system with s
 * 📄 **Bulletin Management**
 
     * Create and view live match events
-    * Automatic odds refresh with schedulers (every 5s)
+    * Automatic odds refresh with schedulers (every 5 minutes)
 
 * 🎯 **Bet Slip Management**
 
@@ -47,11 +47,14 @@ This repository implements a clean architecture-based live betting system with s
 
 ```bash
 # Clone project
-$ git clone https://github.com/your-org/live-betting-case-study.git
-$ cd live-betting-case-study
+$ git clone https://github.com/daidorian09/Live-Betting-App
+$ cd live-betting-app
 
 # Run with Maven
 $ ./mvnw spring-boot:run
+
+# Or run with Docker
+$ docker compose up --build
 
 # Swagger UI
 Visit: http://localhost:8080/swagger-ui.html
@@ -81,20 +84,26 @@ Visit: http://localhost:8080/swagger-ui.html
 
 ## ✅ Tests
 
+![Coverage](https://img.shields.io/badge/Coverage-99%25-brightgreen)
+[![JaCoCo Coverage](https://img.shields.io/badge/JaCoCo-View%20Report-brightgreen)](https://github.com/daidorian09/Live-Betting-App/blob/dev/docs/coverage/)
+
 ```bash
 $ ./mvnw test
 ```
 
 * Covers: Controller, UseCase, Repository behaviors
+* Total test cases: 98 (unit + integration)
+* Test coverage: **99%**
+* Code coverage reports are generated using JaCoCo
 
 ---
 
 ## 🧠 Notes
 
-* Odds update every 5 seconds via a scheduled task
+* Odds i.e Events update every 5 seconds via a scheduled task
 * Redis lock ensures safe concurrent betting on the same event
 * Timeout (2s) and total investment limits are enforced per bet
-
+* ⚠️ H2 does not fully support **PESSIMISTIC_READ** locking — Redis is used to guarantee concurrency control during betting operations.
 ---
 
 ## 📄 License

@@ -17,8 +17,8 @@ public class RedisLockService {
     private final StringRedisTemplate redisTemplate;
 
     public void executeWithLock(final String key, final Duration timeout, final Runnable task) {
-        String lockValue = UUID.randomUUID().toString();
-        Boolean acquired = redisTemplate.opsForValue().setIfAbsent(key, lockValue, timeout);
+        final String lockValue = UUID.randomUUID().toString();
+        final Boolean acquired = redisTemplate.opsForValue().setIfAbsent(key, lockValue, timeout);
 
         if (Boolean.FALSE.equals(acquired)) {
             throw new LockOperationFailedException("Could not acquire Redis lock for key: " + key);

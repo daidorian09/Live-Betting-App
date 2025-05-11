@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">BetCaseStudy</a> &gt; <a href="index.source.html" class="el_package">com.casestudy.BetCaseStudy.api.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.casestudy.BetCaseStudy.api.exception;
+
+import com.casestudy.BetCaseStudy.domain.exception.BetRateMismatchException;
+import com.casestudy.BetCaseStudy.domain.exception.BetSlipLimitExceededException;
+import com.casestudy.BetCaseStudy.domain.exception.BetSlipTimeoutException;
+import com.casestudy.BetCaseStudy.domain.exception.EventAlreadyExistsException;
+import com.casestudy.BetCaseStudy.domain.exception.EventNotFoundException;
+import com.casestudy.BetCaseStudy.domain.exception.InvalidBetTypeException;
+import com.casestudy.BetCaseStudy.domain.exception.InvalidEventException;
+import com.casestudy.BetCaseStudy.domain.exception.UnauthorizedException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+
+@ControllerAdvice
+@RequiredArgsConstructor
+<span class="fc" id="L24">@Slf4j</span>
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(InvalidEventException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleInvalidEventException(final InvalidEventException ex) {
+<span class="fc" id="L30">        log.warn(&quot;InvalidEventException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L32">        return ResponseEntity.unprocessableEntity().body(</span>
+<span class="fc" id="L33">                Map.of(</span>
+<span class="fc" id="L34">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Invalid Event&quot;,
+<span class="fc" id="L36">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L37">                        &quot;status&quot;, HttpStatus.UNPROCESSABLE_ENTITY.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(EventAlreadyExistsException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleEventAlreadyExistsException(final EventAlreadyExistsException ex) {
+<span class="fc" id="L45">        log.warn(&quot;EventAlreadyExistsException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L47">        return ResponseEntity.status(HttpStatus.CONFLICT).body(</span>
+<span class="fc" id="L48">                Map.of(</span>
+<span class="fc" id="L49">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Event Already Exists&quot;,
+<span class="fc" id="L51">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L52">                        &quot;status&quot;, HttpStatus.CONFLICT.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(BetRateMismatchException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleBetRateMismatchExceptionException(final BetRateMismatchException ex) {
+<span class="fc" id="L60">        log.warn(&quot;BetRateMismatchException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L62">        return ResponseEntity.badRequest().body(</span>
+<span class="fc" id="L63">                Map.of(</span>
+<span class="fc" id="L64">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Bet Rate Mismatch&quot;,
+<span class="fc" id="L66">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L67">                        &quot;status&quot;, HttpStatus.BAD_REQUEST.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(InvalidBetTypeException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleInvalidBetTypeException(final InvalidBetTypeException ex) {
+<span class="fc" id="L75">        log.warn(&quot;InvalidBetTypeException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L77">        return ResponseEntity.badRequest().body(</span>
+<span class="fc" id="L78">                Map.of(</span>
+<span class="fc" id="L79">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Invalid Bet Type&quot;,
+<span class="fc" id="L81">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L82">                        &quot;status&quot;, HttpStatus.BAD_REQUEST.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(EventNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleEventNotFoundException(final EventNotFoundException ex) {
+<span class="fc" id="L90">        log.warn(&quot;EventNotFoundException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L92">        return ResponseEntity.badRequest().body(</span>
+<span class="fc" id="L93">                Map.of(</span>
+<span class="fc" id="L94">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Event Not Found&quot;,
+<span class="fc" id="L96">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L97">                        &quot;status&quot;, HttpStatus.BAD_REQUEST.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(BetSlipLimitExceededException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleBetSlipLimitExceededException(final BetSlipLimitExceededException ex) {
+<span class="fc" id="L105">        log.warn(&quot;BetSlipLimitExceededException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L107">        return ResponseEntity.badRequest().body(</span>
+<span class="fc" id="L108">                Map.of(</span>
+<span class="fc" id="L109">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Bet Slip Limit Exceeded&quot;,
+<span class="fc" id="L111">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L112">                        &quot;status&quot;, HttpStatus.BAD_REQUEST.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(BetSlipTimeoutException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleBetSlipTimeoutException(final BetSlipTimeoutException ex) {
+<span class="fc" id="L120">        log.warn(&quot;BetSlipTimeoutException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L122">        return ResponseEntity.badRequest().body(</span>
+<span class="fc" id="L123">                Map.of(</span>
+<span class="fc" id="L124">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Bet Slip Timeout&quot;,
+<span class="fc" id="L126">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L127">                        &quot;status&quot;, HttpStatus.BAD_REQUEST.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleUnauthorizedException(final UnauthorizedException ex) {
+<span class="fc" id="L135">        log.warn(&quot;UnauthorizedException occurred: &quot;, ex);</span>
+
+<span class="fc" id="L137">        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(</span>
+<span class="fc" id="L138">                Map.of(</span>
+<span class="fc" id="L139">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Unauthorized&quot;,
+<span class="fc" id="L141">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L142">                        &quot;status&quot;, HttpStatus.UNAUTHORIZED.value()</span>
+                )
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleGenericException(final Exception ex) {
+<span class="fc" id="L150">        log.error(&quot;Unexpected exception occurred : &quot;, ex);</span>
+
+<span class="fc" id="L152">        return ResponseEntity.internalServerError().body(</span>
+<span class="fc" id="L153">                Map.of(</span>
+<span class="fc" id="L154">                        &quot;timestamp&quot;, LocalDateTime.now(),</span>
+                        &quot;error&quot;, &quot;Internal Server Error&quot;,
+<span class="fc" id="L156">                        &quot;message&quot;, ex.getMessage(),</span>
+<span class="fc" id="L157">                        &quot;status&quot;, HttpStatus.INTERNAL_SERVER_ERROR.value()</span>
+                )
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

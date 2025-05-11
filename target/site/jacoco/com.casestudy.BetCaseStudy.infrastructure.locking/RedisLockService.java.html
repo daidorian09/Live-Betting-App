@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RedisLockService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">BetCaseStudy</a> &gt; <a href="index.source.html" class="el_package">com.casestudy.BetCaseStudy.infrastructure.locking</a> &gt; <span class="el_source">RedisLockService.java</span></div><h1>RedisLockService.java</h1><pre class="source lang-java linenums">package com.casestudy.BetCaseStudy.infrastructure.locking;
+
+import com.casestudy.BetCaseStudy.domain.exception.LockOperationFailedException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.util.Collections;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class RedisLockService {
+
+    private final StringRedisTemplate redisTemplate;
+
+    public void executeWithLock(final String key, final Duration timeout, final Runnable task) {
+<span class="fc" id="L20">        String lockValue = UUID.randomUUID().toString();</span>
+<span class="fc" id="L21">        Boolean acquired = redisTemplate.opsForValue().setIfAbsent(key, lockValue, timeout);</span>
+
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (Boolean.FALSE.equals(acquired)) {</span>
+<span class="fc" id="L24">            throw new LockOperationFailedException(&quot;Could not acquire Redis lock for key: &quot; + key);</span>
+        }
+
+        try {
+<span class="fc" id="L28">            task.run();</span>
+        } finally {
+<span class="fc" id="L30">            releaseLock(key, lockValue);</span>
+        }
+<span class="fc" id="L32">    }</span>
+
+    private void releaseLock(final String key, final String lockValue) {
+<span class="fc" id="L35">        final String luaScript = &quot;&quot;&quot;</span>
+            if redis.call('get', KEYS[1]) == ARGV[1] then
+                return redis.call('del', KEYS[1])
+            else
+                return 0
+            end
+            &quot;&quot;&quot;;
+
+<span class="fc" id="L43">        redisTemplate.execute(</span>
+<span class="fc" id="L44">                RedisScript.of(luaScript, Long.class),</span>
+<span class="fc" id="L45">                Collections.singletonList(key),</span>
+                lockValue
+        );
+<span class="fc" id="L48">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

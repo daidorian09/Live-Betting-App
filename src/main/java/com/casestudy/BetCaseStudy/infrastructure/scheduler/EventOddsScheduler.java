@@ -31,7 +31,7 @@ public class EventOddsScheduler {
     @Value("${betcasestudy.broadcast.page-size}")
     private int pageSize;
 
-    @Scheduled(fixedRate = FIVE_MINUTES_MS) //5
+    @Scheduled(fixedRate = FIVE_MINUTES_MS)
     @SchedulerLock(name = "updateEventOdds", lockAtMostFor = "PT20S", lockAtLeastFor = "PT5S")
     public void updateOdds() {
         int page = 0;
