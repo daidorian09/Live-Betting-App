@@ -10,5 +10,4 @@ public class SecurityConstant {
     public static final String USER_ROLE = "USER";
     public static final String BASIC_AUTH_USERNAME = "admin";
     public static final String BASIC_AUTH_PASSWORD = "admin";
-
 }

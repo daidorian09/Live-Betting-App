@@ -20,5 +20,4 @@ public class ErrorMessageConstant {
 
     public static final String UNAUTHORIZED_CUSTOMER_MESSAGE = "Müşteri yetkilendirilmemiş.";
     public static final String BET_RATE_ON_CHANGE_ERROR_MESSAGE = "Oran güncellenirken beklenmeyen bir hata oluştu.";
-
 }
