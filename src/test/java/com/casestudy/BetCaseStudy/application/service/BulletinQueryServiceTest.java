@@ -68,7 +68,7 @@ class BulletinQueryServiceTest {
         when(eventJpaRepository.findByStartTimeAfter(any())).thenReturn(List.of());
 
         // When
-        List<Event> events = bulletinQueryService.getLiveEvents();
+        final List<Event> events = bulletinQueryService.getLiveEvents();
 
         // Then
         assertThat(events).isEmpty();

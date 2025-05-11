@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Schema(description = "Domain model representing a betting event")
 public record Event(
         @Schema(description = "Unique identifier of the event", example = "1")
-        Long id,
+        long id,
 
         @Schema(description = "Name of the league", example = "Super League")
         String league,

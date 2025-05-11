@@ -10,8 +10,10 @@ import java.util.UUID;
 
 import static com.casestudy.BetCaseStudy.application.constant.ErrorMessageConstant.UNAUTHORIZED_CUSTOMER_MESSAGE;
 import static com.casestudy.BetCaseStudy.application.constant.SecurityConstant.CUSTOMER_ID_HEADER;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class MockCustomerProviderTest {
 

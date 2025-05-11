@@ -1,6 +1,13 @@
 package com.casestudy.BetCaseStudy.api.exception;
 
-import com.casestudy.BetCaseStudy.domain.exception.*;
+import com.casestudy.BetCaseStudy.domain.exception.BetRateMismatchException;
+import com.casestudy.BetCaseStudy.domain.exception.BetSlipLimitExceededException;
+import com.casestudy.BetCaseStudy.domain.exception.BetSlipTimeoutException;
+import com.casestudy.BetCaseStudy.domain.exception.EventAlreadyExistsException;
+import com.casestudy.BetCaseStudy.domain.exception.EventNotFoundException;
+import com.casestudy.BetCaseStudy.domain.exception.InvalidBetTypeException;
+import com.casestudy.BetCaseStudy.domain.exception.InvalidEventException;
+import com.casestudy.BetCaseStudy.domain.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

@@ -36,6 +36,7 @@ public class DistributedEventLockService implements EventLockManager {
             log.warn("Lock could not be acquired : key={}", lockKey, e);
             return Optional.empty();
         } catch (Exception ex) {
+            log.error("Exception occurred while acquiring lock key: key={}", lockKey, ex);
             throw new RuntimeException(BET_RATE_ON_CHANGE_ERROR_MESSAGE, ex);
         }
     }

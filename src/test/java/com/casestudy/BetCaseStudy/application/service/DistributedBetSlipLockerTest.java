@@ -52,7 +52,7 @@ class DistributedBetSlipLockerTest {
     @MethodSource("rethrowableExceptions")
     void shouldRethrowKnownExceptions(RuntimeException exception) {
         // Arrange
-        Runnable action = mock(Runnable.class);
+        final Runnable action = mock(Runnable.class);
         doThrow(exception).when(redisLockService).executeWithLock(anyString(), any(), any());
 
         // Act & Assert

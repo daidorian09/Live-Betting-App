@@ -68,7 +68,7 @@ class EventServiceTest {
     }
 
     private static Stream<Arguments> invalidEventRequests() {
-        LocalDateTime future = LocalDateTime.now().plusHours(1);
+        final LocalDateTime future = LocalDateTime.now().plusHours(1);
         return Stream.of(
                 Arguments.of(new EventRequest(null, "A", "B", BigDecimal.ONE, BigDecimal.ONE, BigDecimal.ONE, future),
                         ErrorMessageConstant.LEAGUE_REQUIRED),
