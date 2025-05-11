@@ -81,11 +81,14 @@ Visit: http://localhost:8080/swagger-ui.html
 
 ## ✅ Tests
 
+![Coverage](https://img.shields.io/badge/Coverage-99%25-brightgreen)
+
 ```bash
 $ ./mvnw test
 ```
 
 * Covers: Controller, UseCase, Repository behaviors
+* Total 98 test cases including both unit and integration tests
 
 ---
 
